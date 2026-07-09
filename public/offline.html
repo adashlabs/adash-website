@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bağlantı Yok | BİNGO</title>
+  <style>
+    body {
+      background-color: #09090b;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .container {
+      max-width: 400px;
+      padding: 40px 20px;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(10px);
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      display: inline-block;
+      animation: pulse 2s infinite;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      letter-spacing: -0.05em;
+    }
+    p {
+      color: #a1a1aa;
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 0 0 24px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #fafafa;
+      color: #09090b;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.95); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">⚡</div>
+    <h1>İnternet Bağlantısı Yok</h1>
+    <p>BİNGO platformuna erişmek için internet bağlantınız olmalıdır. Lütfen bağlantınızı kontrol edip tekrar deneyin.</p>
+    <a href="javascript:window.location.reload();" class="btn">Tekrar Dene</a>
+  </div>
+</body>
+</html>
