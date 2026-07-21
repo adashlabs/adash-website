@@ -1,4 +1,4 @@
-const discordUrl = 'https://go.adash.me/discord/'
+const discordUrl = 'https://go.adash.me/discord'
 
 export const site = {
   name: 'ADASH',
