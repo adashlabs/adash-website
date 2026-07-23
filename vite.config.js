@@ -50,10 +50,16 @@ const sitemapXml = () => `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+${site.blog.posts.map((post) => `  <url>
+    <loc>${escapeHtml(site.seo.canonicalUrl)}blog/${escapeHtml(post.slug)}</loc>
+    <lastmod>${post.date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('\n')}
 </urlset>
 `
 
-const llmsTxt = () => `# ${site.name}
+const llmsTxt = () => `# ${site.name} (ADASH Labs)
 
 > ${site.seo.description}
 
@@ -68,9 +74,13 @@ ${site.purposes.map(({ title, text }) => `- **${title}**: ${text}`).join('\n')}
 - Discord community: ${site.discordUrl}
 - Language: Turkish (tr-TR)
 - Audience: Developers, AI-assisted coders, technology builders, and project teams.
+- Also known as: Adash Lab, Adash Labs, ADASH
 
 ## Primary topics
 ${site.seo.keywords.split(', ').map((keyword) => `- ${keyword}`).join('\n')}
+
+## Blog posts
+${site.blog.posts.map(({ title, excerpt, date }) => `- **${title}** (${date}): ${excerpt}`).join('\n')}
 
 ## Social links
 ${site.socials.map(({ name, url }) => `- ${name}: ${url}`).join('\n')}
@@ -88,27 +98,55 @@ const siteConfigPlugin = () => ({
     order: 'pre',
     handler(html) {
       const organizationId = `${site.seo.canonicalUrl}#organization`
+      const blogPostings = site.blog.posts.map((post) => ({
+        '@type': 'BlogPosting',
+        '@id': `${site.seo.canonicalUrl}blog/${post.slug}`,
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: post.date,
+        dateModified: post.date,
+        author: { '@id': organizationId },
+        publisher: { '@id': organizationId },
+        inLanguage: 'tr-TR',
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `${site.seo.canonicalUrl}blog/${post.slug}`,
+        },
+        keywords: post.category,
+      }))
       const structuredData = JSON.stringify({
         '@context': 'https://schema.org',
         '@graph': [
           {
             '@type': 'Organization',
             '@id': organizationId,
-            name: site.name,
+            name: `${site.name} Labs`,
+            alternateName: ['ADASH Labs', 'Adash Lab', 'ADASH', 'Adash Labs'],
             url: site.seo.canonicalUrl,
             logo: absoluteUrl(site.logo),
             description: site.seo.description,
-            knowsAbout: ['Yazılım geliştirme', 'Yapay zekâ ile kodlama', 'Teknoloji projeleri', 'Açık kaynak'],
+            knowsAbout: ['Yazılım geliştirme', 'Yapay zekâ ile kodlama', 'Teknoloji projeleri', 'Açık kaynak', 'Discord yazılım topluluğu', 'Discord yapay zeka topluluğu'],
             sameAs: site.socials.map(({ url }) => url),
           },
           {
             '@type': 'WebSite',
             '@id': `${site.seo.canonicalUrl}#website`,
             url: site.seo.canonicalUrl,
-            name: site.name,
+            name: `${site.name} Labs`,
+            alternateName: 'Adash Lab',
             description: site.seo.description,
             inLanguage: 'tr-TR',
             publisher: { '@id': organizationId },
+          },
+          {
+            '@type': 'Blog',
+            '@id': `${site.seo.canonicalUrl}#blog`,
+            name: 'ADASH Labs Blog',
+            description: 'Discord yazılım topluluğu, yapay zeka topluluğu ve teknoloji haberleri hakkında blog yazıları.',
+            url: `${site.seo.canonicalUrl}#blog`,
+            inLanguage: 'tr-TR',
+            publisher: { '@id': organizationId },
+            blogPost: blogPostings,
           },
         ],
       }).replaceAll('<', '\\u003c')

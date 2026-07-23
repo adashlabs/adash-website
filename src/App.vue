@@ -1,11 +1,30 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import CloudBackdrop from './components/CloudBackdrop.vue'
 import CloudIntro from './components/CloudIntro.vue'
 import { site } from './config/site'
 
 const logoFailed = ref(false)
 const introDone = ref(false)
+const selectedPost = ref(null)
+
+const openPost = (post) => {
+  selectedPost.value = post
+  document.body.style.overflow = 'hidden'
+}
+
+const closePost = () => {
+  selectedPost.value = null
+  document.body.style.overflow = ''
+}
+
+const formatDate = (dateStr) => {
+  return new Date(dateStr).toLocaleDateString('tr-TR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {
@@ -29,10 +48,13 @@ onMounted(() => {
         <img v-if="!logoFailed" :src="site.logo" :alt="site.name" @error="logoFailed = true" />
         <span v-else>{{ site.name }}</span>
       </a>
-      <a class="discord small" :href="site.discordUrl" target="_blank" rel="noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 5.3A16.3 16.3 0 0 0 15.4 4l-.5 1a14 14 0 0 0-5.8 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C1.9 9.1 1.2 12.8 1.5 16.4a16.6 16.6 0 0 0 5 2.5l1.2-1.7a10.6 10.6 0 0 1-1.8-.9l.4-.3a11.7 11.7 0 0 0 11.4 0l.4.3c-.6.4-1.2.7-1.8.9l1.2 1.7a16.5 16.5 0 0 0 5-2.5c.4-4.2-.8-7.9-3-11.1ZM8.6 14.2c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Zm6.8 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z" /></svg>
-        <span>{{ site.hero.button }}</span>
-      </a>
+      <div class="header-nav">
+        <a class="header-link" href="#blog">Blog</a>
+        <a class="discord small" :href="site.discordUrl" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 5.3A16.3 16.3 0 0 0 15.4 4l-.5 1a14 14 0 0 0-5.8 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C1.9 9.1 1.2 12.8 1.5 16.4a16.6 16.6 0 0 0 5 2.5l1.2-1.7a10.6 10.6 0 0 1-1.8-.9l.4-.3a11.7 11.7 0 0 0 11.4 0l.4.3c-.6.4-1.2.7-1.8.9l1.2 1.7a16.5 16.5 0 0 0 5-2.5c.4-4.2-.8-7.9-3-11.1ZM8.6 14.2c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Zm6.8 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z" /></svg>
+          <span>{{ site.hero.button }}</span>
+        </a>
+      </div>
     </header>
 
     <main>
@@ -82,6 +104,56 @@ onMounted(() => {
         </article>
       </section>
 
+      <section id="blog" class="blog section" aria-label="Blog yazıları">
+        <div class="section-label" data-reveal>04 — {{ site.blog.label }}</div>
+        <h2 class="blog-title" data-reveal>{{ site.blog.title }}</h2>
+        <div class="blog-grid">
+          <article
+            v-for="(post, index) in site.blog.posts"
+            :key="post.slug"
+            class="blog-card"
+            data-reveal
+            :style="{ animationDelay: `${index * 0.08}s` }"
+            @click="openPost(post)"
+          >
+            <div class="blog-card-header">
+              <span class="blog-category">{{ post.category }}</span>
+              <span class="blog-date">{{ formatDate(post.date) }}</span>
+            </div>
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.excerpt }}</p>
+            <div class="blog-card-footer">
+              <span class="blog-read-time">{{ post.readTime }} okuma</span>
+              <span class="blog-read-more">Devamını oku →</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Blog Post Modal -->
+      <Teleport to="body">
+        <div v-if="selectedPost" class="blog-modal-overlay" @click.self="closePost">
+          <div class="blog-modal">
+            <button class="blog-modal-close" @click="closePost" aria-label="Kapat">✕</button>
+            <div class="blog-modal-header">
+              <span class="blog-category">{{ selectedPost.category }}</span>
+              <span class="blog-date">{{ formatDate(selectedPost.date) }} · {{ selectedPost.readTime }} okuma</span>
+            </div>
+            <h2>{{ selectedPost.title }}</h2>
+            <div class="blog-modal-content">
+              <p v-for="(paragraph, i) in selectedPost.content.split('\n\n')" :key="i" v-html="paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/•/g, '<br>•')"></p>
+            </div>
+            <div class="blog-modal-cta">
+              <p>Bu konuları toplulukta tartışmak ister misin?</p>
+              <a class="discord" :href="site.discordUrl" target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 5.3A16.3 16.3 0 0 0 15.4 4l-.5 1a14 14 0 0 0-5.8 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C1.9 9.1 1.2 12.8 1.5 16.4a16.6 16.6 0 0 0 5 2.5l1.2-1.7a10.6 10.6 0 0 1-1.8-.9l.4-.3a11.7 11.7 0 0 0 11.4 0l.4.3c-.6.4-1.2.7-1.8.9l1.2 1.7a16.5 16.5 0 0 0 5-2.5c.4-4.2-.8-7.9-3-11.1ZM8.6 14.2c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Zm6.8 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z" /></svg>
+                <span>Discord'a katıl</span><b>↗</b>
+              </a>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
       <section class="closing section">
         <div class="closing-content" data-reveal>
           <span>{{ site.closing.label }}</span>
@@ -94,6 +166,13 @@ onMounted(() => {
         </div>
       </section>
     </main>
+
+    <!-- SEO: Hidden semantic content for search engines -->
+    <div class="seo-content" aria-hidden="true">
+      <h2>ADASH Labs - Discord Yazılım Topluluğu</h2>
+      <p>ADASH Labs, Türkiye'nin en büyük Discord yazılım topluluğu ve Discord yapay zeka topluluğudur. Yazılımcılar, AI geliştiriciler ve teknoloji meraklıları için ücretsiz katılım. Discord yazılım sunucusu arayanlar, Discord yapay zeka sunucusu arayanlar ve Türk yazılım topluluğu arayanlar için ideal platform. Adash Lab olarak da bilinen ADASH Labs, yazılım geliştirme, yapay zeka ile kodlama ve açık kaynak projelerde işbirliği sunar.</p>
+      <noscript>ADASH Labs — Discord yazılım topluluğu, yapay zekâ ile kodlama ve teknoloji topluluğunu görüntülemek için JavaScript'i etkinleştirin. Adash Lab ve Adash Labs aramaları ile bizi bulabilirsiniz.</noscript>
+    </div>
 
     <footer class="footer">
       <div>
@@ -128,6 +207,9 @@ a { color: inherit; }
 canvas.global-fog { position: fixed; inset: -10%; z-index: 0; width: 120%; height: 120%; opacity: 1; }
 main, .footer { position: relative; z-index: 1; }
 .header { position: absolute; inset: 0 0 auto; z-index: 10; height: 118px; padding: 0 clamp(24px, 5vw, 80px); display: flex; align-items: center; justify-content: space-between; }
+.header-nav { display: flex; align-items: center; gap: 24px; }
+.header-link { color: #aaa; font-size: 13px; font-weight: 500; text-decoration: none; letter-spacing: .02em; transition: color .2s; }
+.header-link:hover { color: #fff; }
 .logo { display: block; flex: 0 0 auto; color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -.06em; text-decoration: none; }
 .logo img { display: block; width: auto; max-width: min(280px, 48vw); height: 62px; object-fit: contain; object-position: left center; }
 .discord { display: flex; align-items: center; gap: 14px; width: fit-content; min-width: 230px; padding: 18px 20px; border-radius: 5px; color: #fff; background: #5865f2; font-size: 13px; font-weight: 700; text-decoration: none; transition: background .2s, transform .2s; }
@@ -195,6 +277,41 @@ h1 > span { display: block; }
 .footer-bottom { display: flex; justify-content: flex-start; padding-top: 25px; border-top: 1px solid #202020; color: #666; font: 10px ui-monospace, monospace; letter-spacing: .08em; }
 [data-reveal] { opacity: 0; transform: translateY(25px); transition: opacity .8s, transform .8s; }
 [data-reveal].visible { opacity: 1; transform: none; }
+
+/* SEO hidden content */
+.seo-content { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Blog Section */
+.blog { background: rgba(4, 4, 4, .72); }
+.blog-title { max-width: 920px; margin: 0 0 clamp(50px, 6vw, 80px); font-size: clamp(40px, 5.5vw, 80px); line-height: 1; letter-spacing: -.06em; font-weight: 500; }
+.blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+.blog-card { position: relative; padding: 32px; border: 1px solid rgba(255, 255, 255, .06); border-radius: 12px; background: rgba(255, 255, 255, .02); backdrop-filter: blur(12px); cursor: pointer; transition: transform .3s, border-color .3s, background .3s, box-shadow .3s; }
+.blog-card:hover { transform: translateY(-4px); border-color: rgba(88, 101, 242, .35); background: rgba(88, 101, 242, .04); box-shadow: 0 12px 40px rgba(88, 101, 242, .08); }
+.blog-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.blog-category { display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(88, 101, 242, .15); color: #8b9cf7; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.blog-date { color: #666; font: 11px ui-monospace, monospace; }
+.blog-card h3 { margin: 0 0 12px; font-size: clamp(18px, 2vw, 22px); line-height: 1.3; letter-spacing: -.03em; font-weight: 500; }
+.blog-card p { margin: 0; color: #999; font-size: 14px; line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.blog-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .06); }
+.blog-read-time { color: #666; font: 11px ui-monospace, monospace; }
+.blog-read-more { color: #8b9cf7; font-size: 13px; font-weight: 600; transition: color .2s; }
+.blog-card:hover .blog-read-more { color: #a5b4fc; }
+
+/* Blog Modal */
+.blog-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .82); backdrop-filter: blur(8px); overflow-y: auto; animation: modal-fade-in .25s ease-out; }
+@keyframes modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.blog-modal { position: relative; width: 100%; max-width: 720px; margin: 40px auto; padding: clamp(28px, 5vw, 56px); border: 1px solid rgba(255, 255, 255, .08); border-radius: 16px; background: #111214; animation: modal-slide-in .3s ease-out; }
+@keyframes modal-slide-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+.blog-modal-close { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 50%; background: transparent; color: #999; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: color .2s, border-color .2s; }
+.blog-modal-close:hover { color: #fff; border-color: rgba(255, 255, 255, .25); }
+.blog-modal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.blog-modal h2 { margin: 0 0 32px; font-size: clamp(26px, 4vw, 36px); line-height: 1.2; letter-spacing: -.04em; font-weight: 600; }
+.blog-modal-content { margin-bottom: 40px; }
+.blog-modal-content p { margin: 0 0 20px; color: #bbb; font-size: 15px; line-height: 1.85; }
+.blog-modal-content strong { color: #e8e8e8; font-weight: 600; display: block; margin-top: 28px; margin-bottom: 8px; font-size: 17px; }
+.blog-modal-cta { padding: 28px; border-radius: 12px; background: rgba(88, 101, 242, .06); border: 1px solid rgba(88, 101, 242, .15); text-align: center; }
+.blog-modal-cta > p { margin: 0 0 18px; color: #ccc; font-size: 15px; }
+.blog-modal-cta .discord { margin: 0 auto; }
 @media (max-width: 700px) {
   .header { height: 92px; }
   .logo img { max-width: 52vw; height: 48px; }
@@ -216,6 +333,11 @@ h1 > span { display: block; }
   .about-grid > p { margin-top: 40px; }
   .purposes article { grid-template-columns: 42px 1fr; gap: 22px; padding: 38px 0; }
   .purposes article p { grid-column: 2; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .blog-title { font-size: 38px; }
+  .blog-card { padding: 24px; }
+  .blog-modal { padding: 24px; margin: 20px auto; }
+  .blog-modal h2 { font-size: 24px; }
   .closing { min-height: 720px; }
   .closing h2 { font-size: 58px; }
   .closing .discord { width: 100%; }
