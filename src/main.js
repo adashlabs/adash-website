@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router'
 import { site } from './config/site'
 
 const setMeta = (selector, attribute, value) => {
@@ -14,4 +15,6 @@ setMeta('meta[property="og:title"]', 'content', site.seo.title)
 setMeta('meta[property="og:description"]', 'content', site.seo.description)
 setMeta('link[rel="canonical"]', 'href', site.seo.canonicalUrl)
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.use(router)
+app.mount('#app')
