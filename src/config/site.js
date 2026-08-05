@@ -16,7 +16,7 @@ export const site = {
 
   hero: {
     eyebrow: 'ADASH Labs — Bağımsız yazılım ve yapay zekâ topluluğu',
-    title: 'Üretenler burada',
+    title: 'Geliştiriciler burada',
     titleAccent: 'birbirini bulur.',
     description: 'Fikrini projeye dönüştürmek için doğru insanlarla tanış. Ürettiğini paylaş, gerçek geri bildirim al ve ekibini kur.',
     points: ['Projeni sun', 'Geri bildirim al', 'Ekibini bul'],
