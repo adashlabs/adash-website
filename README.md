@@ -1,4 +1,4 @@
-# ADASH Labs — Web Platformu
+# ADASH Labs — Web Sitesi
 
 Yazılım geliştiriciler, yapay zekâ meraklıları ve teknoloji üretenler için tasarlanmış bağımsız topluluk platformu web sitesi.
 
